@@ -61,7 +61,10 @@ sobel_fft_image = np.fft.fft2(padded_sobel)
 sobel_fft_image = np.fft.fftshift(sobel_fft_image)
 
 # Calculate the magnitude of the Fourier transform
-magnitude_image = np.abs(sobel_fft_image)
+sobel_magnitude_image = np.abs(sobel_fft_image)
 
 # Save the magnitude image
-cv.imwrite('f_sobel.jpg', magnitude_image)
+cv.imwrite('f_sobel.png', sobel_magnitude_image)
+
+img_frequency_domain_sobeled = np.dot(imgMag,sobel_magnitude_image)
+cv.imwrite("f_Fdomain_sobeled.png",img_frequency_domain_sobeled)

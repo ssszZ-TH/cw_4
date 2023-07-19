@@ -14,7 +14,7 @@ imgF = np.fft.fft2(img)
 ## รูปจริงๆ ที่เป็นสมการ fourier
 imgF = np.fft.fftshift(imgF)
 
-# find magnitude & phase``
+# find magnitude & phase
 imgReal = np.real(imgF)
 imgIma = np.imag(imgF)
 imgMag = np.sqrt(imgReal**2 + imgIma**2)
@@ -54,18 +54,39 @@ print("padded sobel y x = ",padded_sobel.shape)
 
 ####################### เอา รูป sobel filter convert เป็น frequency domain โดยการทำ fourier tranform
 
-# Take the Fourier transform of the image
-sobel_fft_image = np.fft.fft2(padded_sobel)
 
-# Shift the zero frequency component to the center of the spectrum
-sobel_fft_image = np.fft.fftshift(sobel_fft_image)
+# cast data type to float 32 bit
+padded_sobel = padded_sobel.astype(np.float32);
 
-# Calculate the magnitude of the Fourier transform
-sobel_magnitude_image = np.abs(sobel_fft_image)
+# take fourier transform
+sobelF = np.fft.fft2(padded_sobel)
 
-# Save the magnitude image
-cv.imwrite('f_sobel.png', sobel_magnitude_image)
+# ship (0,0) to center of image
+sobelF = np.fft.fftshift(sobelF)
 
+# find magnitude & phase``
+sobelReal = np.real(sobelF)
+sobelIma = np.imag(sobelF)
+sobelMag = np.sqrt(sobelReal**2 + sobelIma**2)
+sobelPhs = np.arctan2(sobelIma, sobelReal)
+
+# Inverse Fourier transform
+sobelRealInv = sobelMag*np.cos(sobelPhs)
+sobelImaInv = sobelMag*np.sin(sobelPhs)
+
+sobelFInv = sobelRealInv + sobelImaInv*1j
+
+sobelFInv = np.fft.ifftshift(sobelFInv)
+sobelInv = np.fft.ifft2(sobelFInv)
+
+sobelInv = np.real(sobelInv)
+sobelInv = sobelInv.astype(np.uint8);
+
+# display magnitude
+#sobelMag = np.log(1+sobelMag)
+sobelMag = cv.normalize(sobelMag, None, 0, 255, cv.NORM_MINMAX, cv.CV_8U)
+
+cv.imwrite("f_sobel.png",sobelMag)
 
 ########################## นำรูป F sobel มา คูณ จุดต่อจุด กับ frequency domain image
 
@@ -74,7 +95,7 @@ cv.imwrite('f_sobel.png', sobel_magnitude_image)
 img_frequency_domain_sobeled=np.zeros(imgMag.shape)
 for y in range(0,imgMag.shape[0]):
     for x in range(0,imgMag.shape[1]):
-        img_frequency_domain_sobeled[y,x]= imgMag[y,x] * sobel_magnitude_image[y,x]
+        img_frequency_domain_sobeled[y,x]= imgMag[y,x] * sobelMag[y,x]
 
 
 

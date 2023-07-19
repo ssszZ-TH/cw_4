@@ -66,5 +66,32 @@ sobel_magnitude_image = np.abs(sobel_fft_image)
 # Save the magnitude image
 cv.imwrite('f_sobel.png', sobel_magnitude_image)
 
-img_frequency_domain_sobeled = np.dot(imgMag,sobel_magnitude_image)
-cv.imwrite("f_Fdomain_sobeled.png",img_frequency_domain_sobeled)
+
+########################## นำรูป F sobel มา คูณ จุดต่อจุด กับ frequency domain image
+
+# img_frequency_domain_sobeled = np.dot(imgMag,sobel_magnitude_image)
+# cv.imwrite("f_Fdomain_sobeled.png",img_frequency_domain_sobeled)
+img_frequency_domain_sobeled=np.zeros(imgMag.shape)
+for y in range(0,imgMag.shape[0]):
+    for x in range(0,imgMag.shape[1]):
+        img_frequency_domain_sobeled[y,x]= imgMag[y,x] * sobel_magnitude_image[y,x]
+
+
+
+
+##############################เเปลง f_Fdomain_sobeled.png ให้กลับเป็นรูปตกกะปิ ก็เป็นอันเส็ดสิ้น
+
+fft_image = np.fft.fftshift(img_frequency_domain_sobeled)
+
+# Calculate the inverse Fourier transform
+inverse_fft_image = np.fft.ifft2(fft_image)
+
+# Convert the inverse Fourier transform to an image
+inverse_fft_image = np.real(inverse_fft_image)
+
+# Normalize the image
+inverse_fft_image = np.clip(inverse_fft_image, 0, 255)
+inverse_fft_image = np.uint8(inverse_fft_image)
+
+# Save the image
+cv.imwrite('f_output.jpg', inverse_fft_image)
